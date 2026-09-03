@@ -23,6 +23,17 @@ python3 -m http.server 8765   # then open http://localhost:8765/
 
 `?level=7` in the URL jumps straight to a room.
 
+## Deploy to Render
+
+The game is a static site (no server), so it fits Render's free static tier.
+`render.yaml` describes the service; the level solver runs as the build step so
+a broken room fails the deploy instead of shipping.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/pradhul/magnus)
+
+Or manually: Render Dashboard → **New → Blueprint** → pick this repo. Every push
+to `main` redeploys; pull requests get their own preview URL.
+
 ### Controls
 
 | Key | Action |

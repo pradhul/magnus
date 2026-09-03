@@ -1,0 +1,16 @@
+# Render Blueprint — deploys Magnus as a free static site.
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    runtime: static
+    name: magnus
+    plan: free
+    # The solver doubles as the build gate: an unsolvable room or a stale par fails the deploy.
+    buildCommand: node tools/solve.js && rm -rf dist && mkdir dist && cp -r index.html src dist/
+    staticPublishPath: dist
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+    previews:
+      generation: automatic
