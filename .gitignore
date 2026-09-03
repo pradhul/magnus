@@ -1,0 +1,15 @@
+.DS_Store
+*.user
+*.pid
+.env
+.env.*
+/builds/
+/Library/
+/Temp/
+/Logs/
+/obj/
+/bin/
+*.apk
+*.aab
+*.ipa
+node_modules/
