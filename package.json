@@ -1,0 +1,11 @@
+{
+  "name": "magnus",
+  "version": "0.1.0",
+  "description": "Grid puzzle game built on the properties of magnets",
+  "private": true,
+  "scripts": {
+    "test": "node tools/solve.js",
+    "start": "python3 -m http.server 8765"
+  },
+  "license": "MIT"
+}
