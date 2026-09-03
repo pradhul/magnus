@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Magnus — Chapter 1: Loading Bay 0</title>
+  <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+  <header>
+    <h1>MAGNUS <span class="sub">Chapter 1 · Loading Bay 0</span></h1>
+    <nav class="level-nav">
+      <button id="prev" title="Previous room ([)">◀</button>
+      <select id="levelSelect" aria-label="Choose room"></select>
+      <button id="next" title="Next room (])">▶</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="stage">
+      <div class="title">
+        <h2 id="levelName"></h2>
+        <p id="teaches" class="teaches"></p>
+        <p id="story"></p>
+      </div>
+
+      <div class="viewport">
+        <canvas id="game" aria-label="Game view"></canvas>
+        <div id="loading" class="loading">Loading Three.js…</div>
+      </div>
+
+      <div class="status">
+        <span id="poleBadge" class="badge north"></span>
+        <span id="moves"></span>
+        <span id="best" class="best"></span>
+        <span id="msg" class="msg"></span>
+        <button id="nextLevel" class="primary hidden">Next room ↵</button>
+      </div>
+
+      <div class="controls">
+        <div class="dpad" aria-label="Move">
+          <button data-action="up" title="Up">▲</button>
+          <button data-action="left" title="Left">◀</button>
+          <button data-action="down" title="Down">▼</button>
+          <button data-action="right" title="Right">▶</button>
+        </div>
+        <div class="buttons">
+          <button id="pulseMode" class="wide" aria-pressed="false" title="Make the arrow buttons pulse instead of walk">⚡ Pulse mode</button>
+          <button data-action="toggle">Flip pole <kbd>Space</kbd></button>
+          <button data-action="undo">Undo <kbd>Z</kbd></button>
+          <button data-action="restart">Restart <kbd>R</kbd></button>
+          <button data-action="hint">Hint <kbd>H</kbd></button>
+        </div>
+      </div>
+      <p id="hintText" class="hint hidden"></p>
+    </section>
+
+    <aside class="rules">
+      <h3>Controls</h3>
+      <ul>
+        <li><kbd>←↑↓→</kbd> / <kbd>WASD</kbd> walk</li>
+        <li><kbd>Shift</kbd> + direction — <b>pulse</b> your field that way (or click a tile in your row/column)</li>
+        <li><kbd>Space</kbd> flip your pole N ⇄ S</li>
+        <li><kbd>Z</kbd> undo · <kbd>R</kbd> restart · <kbd>H</kbd> hint · <kbd>[</kbd> <kbd>]</kbd> rooms</li>
+      </ul>
+
+      <h3>How magnets work here</h3>
+      <ul>
+        <li>Your pulse travels in a straight line and grabs the <b>first body</b> it meets. Walls stop it; <b>glass</b> does not.</li>
+        <li><b>Unlike poles pull, like poles push.</b> Plain iron has no pole: it is always pulled, never pushed.</li>
+        <li><b>Force is mutual.</b> Light bodies slide to you or away from you until something stops them. Heavy bodies (riveted anchors, glowing pillars) move <i>you</i> instead — you fly until something stops you.</li>
+        <li>Push a block that <b>cannot move</b> and the push comes back: you recoil.</li>
+        <li>A block that slides into a <b>pit</b> sinks and fills it. If <i>you</i> stop over a pit, you fall.</li>
+        <li><b>Plates</b> hold blast doors open only while something rests on every plate.</li>
+      </ul>
+
+      <h3>Legend</h3>
+      <ul class="legend">
+        <li><i class="sw floor"></i> floor · <i class="sw wall"></i> concrete · <i class="sw pit"></i> acid trench</li>
+        <li><i class="sw glass"></i> glass · <i class="sw anchor"></i> steel anchor (heavy iron)</li>
+        <li><i class="sw north"></i> N · <i class="sw south"></i> S — blocks (light) and pillars (heavy)</li>
+        <li><i class="sw iron"></i> iron crate · <i class="sw plate"></i> plate · <i class="sw door"></i> door · <i class="sw exit"></i> exit</li>
+      </ul>
+    </aside>
+  </main>
+
+  <script src="src/engine.js"></script>
+  <script src="src/levels.js"></script>
+  <script src="src/render3d.js"></script>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+    window.THREE = THREE;
+    window.dispatchEvent(new Event('three-ready'));
+  </script>
+  <script src="src/main.js"></script>
+</body>
+</html>
