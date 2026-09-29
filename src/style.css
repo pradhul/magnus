@@ -235,8 +235,8 @@ select {
 .splash-inner::before {
   content: '';
   position: absolute;
-  inset: -40px -60px;
-  background: radial-gradient(ellipse at center, rgba(10, 16, 28, 0.72) 0%, rgba(10, 16, 28, 0) 75%);
+  inset: -50px -80px;
+  background: radial-gradient(ellipse at center, rgba(10, 16, 28, 0.88) 0%, rgba(10, 16, 28, 0.5) 45%, rgba(10, 16, 28, 0) 78%);
   z-index: -1;
 }
 .chapter {
