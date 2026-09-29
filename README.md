@@ -4,12 +4,14 @@ A grid puzzle game about a salvage rigger whose body became a magnet.
 
 Magnus can **pull** and **push** anything ferrous. Force is mutual: light things
 slide to him or away from him, heavy things move *him*. Unlike poles pull, like
-poles push, iron can only be pulled, and glass is invisible to a field. Every
+poles push, iron can only be pulled, and crystal is invisible to a field. Every
 puzzle is one of those facts, applied.
 
-Chapter 1, *Loading Bay 0*, is ten rooms of increasing difficulty. See
+Chapter 1, *The Clearing*, is ten rooms of increasing difficulty. See
 [`DESIGN.md`](DESIGN.md) for the storyline, the rules, the obstacle catalogue,
 and a walkthrough of each room.
+
+Version **0.2.0**.
 
 ## Play
 
@@ -22,6 +24,10 @@ python3 -m http.server 8765   # then open http://localhost:8765/
 ```
 
 `?level=7` in the URL jumps straight to a room.
+
+The board fills the window. **Info** (or `I`) opens rules, story, and level
+select. **Fullscreen** puts the pad on screen so the game is playable on a
+phone or in a kiosk.
 
 ## Deploy to Render
 
@@ -39,19 +45,21 @@ to `main` redeploys; pull requests get their own preview URL.
 | Key | Action |
 | --- | --- |
 | Arrows / WASD | Walk |
-| **Shift** + direction | **Pulse** your field that way (or click a tile in your row/column) |
+| **Shift** + direction | **Pulse** your field that way (or tap a tile in your row/column) |
 | Space | Flip your pole N ⇄ S |
 | Z | Undo |
 | R | Restart room |
-| H | Hint |
+| I | Open / close info |
+| H | Open info and toggle hint |
 | `[` `]` | Previous / next room |
 
-Touch: use the on-screen d-pad; toggle **Pulse mode** to make it pulse instead of walk.
+Touch / fullscreen: on-screen d-pad on the left; Pulse, Flip, Undo, Restart on
+the right. Toggle **Pulse** to make the pad pulse instead of walk.
 
 ## Project layout
 
 ```
-index.html        page shell, HUD, controls
+index.html        page shell, overlay controls, info panel
 src/engine.js     the rules — pure logic, runs in the browser and in Node
 src/levels.js     the ten rooms as ASCII maps
 src/render3d.js   Three.js view: geometry, lighting, animation of engine events
@@ -77,10 +85,10 @@ The solver exits non-zero if a room is unsolvable or its recorded `par` is stale
 ## Map legend
 
 ```
-#  concrete wall        =  glass (field passes, bodies don't)
-.  floor                _  pressure plate
-~  acid trench (pit)    D  blast door (open while every plate is held)
-A  steel anchor         X  exit
-N  S  heavy pillars     @  Magnus start
-i  iron crate           n  s  light magnet blocks
+#  rock / hedge / log   =  crystal (field passes, bodies don't)
+.  grass                _  stone plate
+~  water (pit)          D  wooden gate (open while every plate is held)
+A  iron-banded boulder  X  lantern / exit
+N  S  heavy lodestones  @  Magnus start
+i  crate                n  s  light magnet blocks
 ```

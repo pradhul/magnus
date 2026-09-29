@@ -15,20 +15,54 @@
     name: $('levelName'), story: $('story'), teaches: $('teaches'), hint: $('hintText'),
     pole: $('poleBadge'), moves: $('moves'), msg: $('msg'), best: $('best'),
     nextBtn: $('nextLevel'), pulseMode: $('pulseMode'), loading: $('loading'),
+    infoBtn: $('infoBtn'), infoClose: $('infoClose'), infoPanel: $('infoPanel'),
+    fsBtn: $('fsBtn'), viewport: $('viewport'), hintBtn: $('hintBtn'),
   };
 
   let progress = { best: {}, unlocked: 1 };
   try { Object.assign(progress, JSON.parse(localStorage.getItem(STORAGE) || '{}')); } catch (e) { /* fresh start */ }
   const save = () => { try { localStorage.setItem(STORAGE, JSON.stringify(progress)); } catch (e) { /* private mode */ } };
 
-  let R = null;           // renderer
-  let idx = 0;            // current level index
+  let R = null;
+  let idx = 0;
   let level, state, history, moves;
-  let queue = [];         // actions waiting for the current animation
-  let settleAt = 0;       // timestamp when the current animation finishes
-  let pulseMode = false;  // touch controls: d-pad pulses instead of walking
+  let queue = [];
+  let settleAt = 0;
+  let pulseMode = false;
+  let infoOpen = false;
 
-  // ---- HUD ----------------------------------------------------------------------
+  function setInfo(open) {
+    infoOpen = open;
+    document.body.classList.toggle('info-open', open);
+    ui.infoPanel.classList.toggle('hidden', !open);
+    ui.infoPanel.setAttribute('aria-hidden', String(!open));
+  }
+
+  function isFullscreen() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement) || document.body.classList.contains('fake-fs');
+  }
+
+  function syncFsClass() {
+    const on = isFullscreen();
+    document.body.classList.toggle('fullscreen', !!(document.fullscreenElement || document.webkitFullscreenElement));
+    ui.fsBtn.textContent = on ? 'Exit full' : 'Fullscreen';
+    if (R) R.resize();
+  }
+
+  function toggleFullscreen() {
+    const el = ui.viewport;
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      return;
+    }
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (req) {
+      Promise.resolve(req.call(el)).catch(() => document.body.classList.add('fake-fs'));
+    } else {
+      document.body.classList.toggle('fake-fs');
+    }
+    syncFsClass();
+  }
 
   function refreshHud() {
     ui.name.textContent = level.name;
@@ -44,6 +78,7 @@
     ui.prev.disabled = idx === 0;
     ui.next.disabled = idx >= LEVELS.length - 1;
     ui.nextBtn.classList.toggle('hidden', !state.won || idx >= LEVELS.length - 1);
+    ui.hintBtn.textContent = ui.hint.classList.contains('hidden') ? 'Show hint' : 'Hide hint';
   }
 
   function say(text, cls) {
@@ -60,8 +95,6 @@
     }
     R.setPreview(t);
   }
-
-  // ---- level flow -----------------------------------------------------------------
 
   function loadLevel(i) {
     idx = Math.max(0, Math.min(LEVELS.length - 1, i));
@@ -103,7 +136,7 @@
     refreshHud();
 
     if (next.dead) {
-      say('Magnus fell into the trench. Rewinding…', 'bad');
+      say('Magnus fell into the water. Rewinding…', 'bad');
       setTimeout(() => { if (state === next) undo(); }, dur + 500);
       return;
     }
@@ -112,8 +145,8 @@
       if (!best || moves < best) progress.best[idx] = moves;
       progress.unlocked = Math.max(progress.unlocked, idx + 2);
       save();
-      const verdict = moves <= level.par ? 'Par. Clean rigging.' : `Par is ${level.par}.`;
-      say(`Bay section clear in ${moves} moves. ${verdict}`, 'good');
+      const verdict = moves <= level.par ? 'Par. Clean work.' : `Par is ${level.par}.`;
+      say(`Clearing open in ${moves} moves. ${verdict}`, 'good');
       refreshHud();
       return;
     }
@@ -123,15 +156,20 @@
     }, dur);
   }
 
-  // ---- input ----------------------------------------------------------------------
-
   const KEYS = {
     ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
     w: 'up', s: 'down', a: 'left', d: 'right', W: 'up', S: 'down', A: 'left', D: 'right',
   };
 
   window.addEventListener('keydown', ev => {
-    if (ev.target.tagName === 'SELECT') return;
+    if (ev.target.tagName === 'SELECT' || ev.target.tagName === 'INPUT') return;
+    if (ev.key === 'Escape') { setInfo(false); return; }
+    if (ev.key === 'i' || ev.key === 'I') {
+      if (ev.key === 'I' && ev.shiftKey) return;
+      ev.preventDefault();
+      setInfo(!infoOpen);
+      return;
+    }
     const dir = KEYS[ev.key];
     if (dir) {
       ev.preventDefault();
@@ -142,7 +180,11 @@
       case ' ': case 'Tab': case 'f': case 'F': ev.preventDefault(); act('toggle'); break;
       case 'z': case 'Z': case 'Backspace': ev.preventDefault(); undo(); break;
       case 'r': case 'R': restart(); break;
-      case 'h': case 'H': ui.hint.classList.toggle('hidden'); break;
+      case 'h': case 'H':
+        setInfo(true);
+        ui.hint.classList.toggle('hidden');
+        refreshHud();
+        break;
       case 'Enter': case 'n': case 'N': if (state.won && idx < LEVELS.length - 1) loadLevel(idx + 1); break;
       case ']': if (idx < LEVELS.length - 1) loadLevel(idx + 1); break;
       case '[': if (idx > 0) loadLevel(idx - 1); break;
@@ -151,7 +193,6 @@
   });
   window.addEventListener('keyup', ev => { if (ev.key === 'Shift') ui.canvas.classList.remove('pulsing'); });
 
-  // Clicking a tile in Magnus's row or column pulses that way.
   ui.canvas.addEventListener('pointerdown', ev => {
     if (!R) return;
     const rect = ui.canvas.getBoundingClientRect();
@@ -159,10 +200,10 @@
     const ray = new THREE.Raycaster();
     ray.setFromCamera(ndc, R.camera);
     const hit = new THREE.Vector3();
-    if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.4), hit)) return;
+    if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
     const tx = Math.round(hit.x), ty = Math.round(hit.z);
     const dx = Math.sign(tx - state.px), dy = Math.sign(ty - state.py);
-    if ((dx !== 0) === (dy !== 0)) return; // not on a straight line, or on Magnus himself
+    if ((dx !== 0) === (dy !== 0)) return;
     const dir = dx === 1 ? 'right' : dx === -1 ? 'left' : dy === 1 ? 'down' : 'up';
     act('pulse:' + dir);
   });
@@ -172,7 +213,12 @@
       const a = btn.dataset.action;
       if (a === 'undo') return undo();
       if (a === 'restart') return restart();
-      if (a === 'hint') return ui.hint.classList.toggle('hidden');
+      if (a === 'hint') {
+        setInfo(true);
+        ui.hint.classList.toggle('hidden');
+        refreshHud();
+        return;
+      }
       if (E.MOVES.includes(a)) return act(pulseMode ? 'pulse:' + a : a);
       act(a);
     });
@@ -186,14 +232,17 @@
   ui.prev.addEventListener('click', () => loadLevel(idx - 1));
   ui.next.addEventListener('click', () => loadLevel(idx + 1));
   ui.select.addEventListener('change', () => { loadLevel(Number(ui.select.value)); ui.select.blur(); });
+  ui.infoBtn.addEventListener('click', () => setInfo(!infoOpen));
+  ui.infoClose.addEventListener('click', () => setInfo(false));
+  ui.fsBtn.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', syncFsClass);
+  document.addEventListener('webkitfullscreenchange', syncFsClass);
 
   LEVELS.forEach((L, i) => {
     const o = document.createElement('option');
     o.value = String(i); o.textContent = L.name;
     ui.select.appendChild(o);
   });
-
-  // ---- boot -------------------------------------------------------------------------
 
   function boot() {
     R = new window.MagnusRenderer3D(window.THREE, ui.canvas);
