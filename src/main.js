@@ -16,7 +16,7 @@
     pole: $('poleBadge'), moves: $('moves'), msg: $('msg'), best: $('best'),
     nextBtn: $('nextLevel'), pulseMode: $('pulseMode'), loading: $('loading'),
     infoBtn: $('infoBtn'), infoClose: $('infoClose'), infoPanel: $('infoPanel'),
-    fsBtn: $('fsBtn'), viewport: $('viewport'), hintBtn: $('hintBtn'),
+    fsBtn: $('fsBtn'), hintBtn: $('hintBtn'),
     splash: $('splash'), splashCanvas: $('splashCanvas'), startBtn: $('startBtn'),
     startFsBtn: $('startFsBtn'), splashError: $('splashError'),
   };
@@ -67,7 +67,9 @@
   }
 
   function toggleFullscreen() {
-    const el = ui.viewport;
+    // The whole document goes fullscreen (not just the viewport) so the Info
+    // panel, which lives outside the viewport, stays reachable.
+    const el = document.documentElement;
     if (document.fullscreenElement || document.webkitFullscreenElement) {
       (document.exitFullscreen || document.webkitExitFullscreen).call(document);
       return;
