@@ -12,8 +12,8 @@
     {
       name: '1-1  The Twitch',
       teaches: 'Heavy iron pulls you.',
-      story: 'The surge is over. Every ferrous thing in this clearing leans toward your hands. The iron-banded boulder across the pond is the heaviest thing here. It wants you.',
-      hint: 'Stand in line with the iron-banded boulder (A) and pulse toward it. Heavy things move you.',
+      story: 'The surge is over. Every ferrous thing in this clearing leans toward your hands — you can see it: metal glows at its base. The riveted steel anchor across the pond is the heaviest thing here. It wants you.',
+      hint: 'Stand in line with the glowing steel anchor (A) and pulse toward it. Heavy things move you.',
       par: 3,
       map: [
         '############',

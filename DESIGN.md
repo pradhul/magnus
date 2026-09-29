@@ -98,7 +98,7 @@ later rooms.
 
 | Tile | Name | Attract | Repel |
 | --- | --- | --- | --- |
-| `A` | Iron-banded boulder | Zip toward it, either pole | never |
+| `A` | Steel anchor (riveted iron) | Zip toward it, either pole | never |
 | `N` | North lodestone | Zip when Magnus is S | Launch when Magnus is N |
 | `S` | South lodestone | Zip when Magnus is N | Launch when Magnus is S |
 

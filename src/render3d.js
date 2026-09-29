@@ -13,11 +13,12 @@
     fog: 0x9dcee6,
     grassA: 0x4f9a4a, grassB: 0x428742, dirt: 0x8a6a42, meadow: 0x3d7a3a,
     water: 0x2a7a96, waterDeep: 0x16384a,
-    rock: 0x8a8376, rockDark: 0x6a645a, moss: 0x3a6b38,
+    rock: 0x9a8a72, rockDark: 0x7a6a56, moss: 0x3a6b38,
     bark: 0x4a3426, leaf: 0x2f6b32, leaf2: 0x4a8c3c,
     wood: 0x8b5a32, woodDark: 0x5c3a1e,
     crystal: 0xa8e4ff,
     iron: 0x6f7784, ironDark: 0x4a505b, ironBand: 0xc8d0dc,
+    steel: 0x8b95a3, steelDark: 0x55606d, ironHalo: 0xd7e0ea,
     north: 0xe0483f, south: 0x3b82f6,
     plate: 0xc4a35a, plateDown: 0xe8d07a,
     door: 0x6b4228, doorOpen: 0x3d2818,
@@ -137,6 +138,8 @@
         iron: std(C.iron, { metalness: 0.65, roughness: 0.45 }),
         ironFill: std(C.ironDark, { metalness: 0.35, roughness: 0.7 }),
         ironBand: std(C.ironBand, { metalness: 0.85, roughness: 0.3 }),
+        steel: std(C.steel, { metalness: 0.85, roughness: 0.32 }),
+        steelDark: std(C.steelDark, { metalness: 0.8, roughness: 0.4 }),
         north: std(C.north, { emissive: C.north, emissiveIntensity: 0.45 }),
         south: std(C.south, { emissive: C.south, emissiveIntensity: 0.45 }),
         plate: std(C.plate, { emissive: C.plate, emissiveIntensity: 0.12, metalness: 0.2 }),
@@ -162,8 +165,12 @@
         water: new THREE.BoxGeometry(0.98, 0.06, 0.98),
         pitWall: new THREE.BoxGeometry(1, 0.9, 1),
         crystal: new THREE.BoxGeometry(0.72, 0.95, 0.18),
-        boulder: new THREE.DodecahedronGeometry(0.48, 0),
-        band: new THREE.TorusGeometry(0.38, 0.05, 8, 24),
+        anchor: new THREE.BoxGeometry(0.84, 0.9, 0.84),
+        anchorCap: new THREE.BoxGeometry(0.92, 0.1, 0.92),
+        rivet: new THREE.SphereGeometry(0.05, 8, 8),
+        halo: new THREE.TorusGeometry(0.46, 0.035, 8, 40),
+        haloHeavy: new THREE.TorusGeometry(0.5, 0.06, 8, 40),
+        plinth: new THREE.BoxGeometry(0.98, 0.08, 0.98),
         pillar: new THREE.CylinderGeometry(0.28, 0.36, 1.15, 7),
         pillarCap: new THREE.CylinderGeometry(0.34, 0.34, 0.08, 8),
         plate: new THREE.CylinderGeometry(0.34, 0.36, 0.08, 20),
@@ -358,6 +365,7 @@
       for (const m of this.objectMeshes.values()) this.dynamicGroup.remove(m);
       this.objectMeshes.clear();
       this.doors = []; this.plates = []; this.pitFills = new Map(); this.waterTiles = [];
+      this.halos = [];
       this.exitBeacon = null;
 
       const rand = mulberry32(hashStr(level.name || 'room'));
@@ -407,23 +415,31 @@
             m.rotation.y = (rand() - 0.5) * 0.25;
             this.staticGroup.add(m);
           } else if (t === 'A') {
-            const b = this._cast(new THREE.Mesh(G.boulder, M.rock));
-            b.position.set(x, 0.42, y);
-            b.rotation.set(rand(), rand(), rand());
-            b.scale.set(1.05, 0.9 + rand() * 0.2, 1.0);
-            const band = new THREE.Mesh(G.band, M.ironBand);
-            band.position.set(x, 0.46, y);
-            band.rotation.x = Math.PI / 2;
-            this.staticGroup.add(b, band);
+            const body = this._cast(new THREE.Mesh(G.anchor, M.steelDark));
+            body.position.set(x, 0.45, y);
+            const cap = this._cast(new THREE.Mesh(G.anchorCap, M.steel));
+            cap.position.set(x, 0.94, y);
+            const lbl = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.5), new THREE.MeshBasicMaterial({ map: this.textures.i, transparent: true }));
+            lbl.rotation.x = -Math.PI / 2; lbl.position.set(x, 1.0, y);
+            this.staticGroup.add(body, cap, lbl);
+            for (const [rx, rz] of [[-0.32, -0.32], [0.32, -0.32], [-0.32, 0.32], [0.32, 0.32]]) {
+              const r = new THREE.Mesh(G.rivet, M.ironBand);
+              r.position.set(x + rx, 1.0, y + rz);
+              this.staticGroup.add(r);
+            }
+            this._addPlinth(x, y);
+            this._addHalo(this.staticGroup, x, y, C.ironHalo, 0.07, true);
           } else if (t === 'N' || t === 'S') {
             const mat = t === 'N' ? M.north : M.south;
             const m = this._cast(new THREE.Mesh(G.pillar, mat));
             m.position.set(x, 0.58, y);
-            const cap = new THREE.Mesh(G.pillarCap, M.rockDark);
+            const cap = new THREE.Mesh(G.pillarCap, M.steel);
             cap.position.set(x, 1.16, y);
             const lbl = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.46), new THREE.MeshBasicMaterial({ map: this.textures[t.toLowerCase()], transparent: true }));
             lbl.rotation.x = -Math.PI / 2; lbl.position.set(x, 1.22, y);
             this.staticGroup.add(m, cap, lbl);
+            this._addPlinth(x, y);
+            this._addHalo(this.staticGroup, x, y, t === 'N' ? C.north : C.south, 0.07, true);
           } else if (t === '_') {
             const ring = new THREE.Mesh(G.plateRing, M.plate);
             ring.rotation.x = Math.PI / 2; ring.position.set(x, 0.02, y);
@@ -514,13 +530,39 @@
       }
     }
 
+    // Every magnetic body wears a glowing ring at its base so metal reads as
+    // metal from overhead: white for iron, red/blue for a pole.
+    _addHalo(parent, x, y, color, yOffset, heavy) {
+      const mat = new this.THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.6, depthWrite: false });
+      const ring = new this.THREE.Mesh(heavy ? this.geo.haloHeavy : this.geo.halo, mat);
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(x, yOffset === undefined ? 0.02 : yOffset, y);
+      parent.add(ring);
+      this.halos.push(ring);
+      return ring;
+    }
+
+    // Heavy bodies are bolted to a steel plate: they will never slide, they move you.
+    _addPlinth(x, y) {
+      const plate = this._cast(new this.THREE.Mesh(this.geo.plinth, this.materials.steelDark));
+      plate.position.set(x, 0.0, y);
+      this.staticGroup.add(plate);
+      for (const [rx, rz] of [[-0.42, -0.42], [0.42, -0.42], [-0.42, 0.42], [0.42, 0.42]]) {
+        const r = new this.THREE.Mesh(this.geo.rivet, this.materials.ironBand);
+        r.position.set(x + rx, 0.05, y + rz);
+        this.staticGroup.add(r);
+      }
+    }
+
     _makeObject(o) {
-      const mat = o.type === 'i' ? this.materials.wood : o.type === 'n' ? this.materials.north : this.materials.south;
-      const top = new this.THREE.MeshStandardMaterial({ map: this.textures[o.type], roughness: 0.55, metalness: 0.15 });
-      const m = new this.THREE.Mesh(this.geo.crate, [mat, mat, top, mat, mat, mat]);
+      const { THREE } = this;
+      const color = o.type === 'i' ? C.ironHalo : o.type === 'n' ? C.north : C.south;
+      const face = new THREE.MeshStandardMaterial({ map: this.textures[o.type], roughness: 0.4, metalness: 0.7 });
+      const m = new THREE.Mesh(this.geo.crate, face);
       m.castShadow = true; m.receiveShadow = true;
       m.position.set(o.x, 0.36, o.y);
       m.userData = { id: o.id, type: o.type };
+      this._addHalo(m, 0, 0, color, -0.34);
       this.dynamicGroup.add(m);
       this.objectMeshes.set(o.id, m);
       return m;
@@ -706,6 +748,10 @@
         this.exitBeacon.scale.setScalar(1 + 0.08 * Math.sin(now / 280));
       }
       if (this.materials.water) this.materials.water.emissiveIntensity = 0.4 + 0.12 * Math.sin(now / 480);
+      if (this.halos) {
+        const k = 0.45 + 0.25 * Math.sin(now / 420);
+        for (const h of this.halos) { h.material.opacity = k; h.scale.setScalar(1 + 0.05 * Math.sin(now / 420)); }
+      }
       this.player.userData.glow.intensity = 1.3 + 0.4 * Math.sin(now / 300);
       this.previewGroup.children.forEach((c, i) => {
         if (c.material && c.geometry && c.geometry.type === 'RingGeometry') {

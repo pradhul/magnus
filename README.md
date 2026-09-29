@@ -88,7 +88,7 @@ The solver exits non-zero if a room is unsolvable or its recorded `par` is stale
 #  rock / hedge / log   =  crystal (field passes, bodies don't)
 .  grass                _  stone plate
 ~  water (pit)          D  wooden gate (open while every plate is held)
-A  iron-banded boulder  X  lantern / exit
+A  steel anchor (Fe)    X  lantern / exit
 N  S  heavy lodestones  @  Magnus start
 i  crate                n  s  light magnet blocks
 ```

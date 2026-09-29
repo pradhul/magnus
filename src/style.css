@@ -203,10 +203,10 @@ select {
 .sw.wall { background: #8a8376; }
 .sw.pit { background: #16384a; box-shadow: inset 0 0 5px #2a7a96; }
 .sw.glass { background: rgba(168, 228, 255, 0.45); }
-.sw.anchor { background: #8a8376; box-shadow: inset 0 0 0 2px #c8d0dc; }
+.sw.anchor { background: #55606d; box-shadow: 0 0 0 2px rgba(215, 224, 234, 0.7); }
 .sw.north { background: var(--north); }
 .sw.south { background: var(--south); }
-.sw.iron { background: #8b5a32; }
+.sw.iron { background: #6f7784; box-shadow: 0 0 0 2px rgba(215, 224, 234, 0.7); }
 .sw.plate { background: #c4a35a; border-radius: 50%; }
 .sw.door { background: #6b4228; }
 .sw.exit { background: var(--good); }
