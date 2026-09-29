@@ -17,6 +17,8 @@
     nextBtn: $('nextLevel'), pulseMode: $('pulseMode'), loading: $('loading'),
     infoBtn: $('infoBtn'), infoClose: $('infoClose'), infoPanel: $('infoPanel'),
     fsBtn: $('fsBtn'), viewport: $('viewport'), hintBtn: $('hintBtn'),
+    splash: $('splash'), splashCanvas: $('splashCanvas'), startBtn: $('startBtn'),
+    startFsBtn: $('startFsBtn'), splashError: $('splashError'),
   };
 
   let progress = { best: {}, unlocked: 1 };
@@ -30,6 +32,21 @@
   let settleAt = 0;
   let pulseMode = false;
   let infoOpen = false;
+  let started = false;
+  const stopSplash = window.startSplash ? window.startSplash(ui.splashCanvas) : () => {};
+
+  // Leaves the title screen. Called from a click or keypress so that the
+  // fullscreen request counts as a user gesture.
+  function start(fullscreen) {
+    if (started || !R) return;
+    started = true;
+    document.body.classList.remove('booting');
+    ui.splash.classList.add('out');
+    ui.splash.setAttribute('aria-hidden', 'true');
+    setTimeout(() => { stopSplash(); ui.splash.classList.add('hidden'); }, 550);
+    if (fullscreen && !isFullscreen()) toggleFullscreen();
+    R.resize();
+  }
 
   function setInfo(open) {
     infoOpen = open;
@@ -123,7 +140,7 @@
   }
 
   function act(action) {
-    if (state.dead || state.won) return;
+    if (!started || state.dead || state.won) return;
     if (performance.now() < settleAt) { if (queue.length < 2) queue.push(action); return; }
     const next = E.step(level, state, action);
     const changed = E.key(next) !== E.key(state);
@@ -163,6 +180,11 @@
 
   window.addEventListener('keydown', ev => {
     if (ev.target.tagName === 'SELECT' || ev.target.tagName === 'INPUT') return;
+    if (!started) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); start(false); }
+      else if (ev.key === 'f' || ev.key === 'F') { ev.preventDefault(); start(true); }
+      return;
+    }
     if (ev.key === 'Escape') { setInfo(false); return; }
     if (ev.key === 'i' || ev.key === 'I') {
       if (ev.key === 'I' && ev.shiftKey) return;
@@ -177,7 +199,8 @@
       return;
     }
     switch (ev.key) {
-      case ' ': case 'Tab': case 'f': case 'F': ev.preventDefault(); act('toggle'); break;
+      case ' ': case 'Tab': ev.preventDefault(); act('toggle'); break;
+      case 'f': case 'F': ev.preventDefault(); toggleFullscreen(); break;
       case 'z': case 'Z': case 'Backspace': ev.preventDefault(); undo(); break;
       case 'r': case 'R': restart(); break;
       case 'h': case 'H':
@@ -235,6 +258,8 @@
   ui.infoBtn.addEventListener('click', () => setInfo(!infoOpen));
   ui.infoClose.addEventListener('click', () => setInfo(false));
   ui.fsBtn.addEventListener('click', toggleFullscreen);
+  ui.startBtn.addEventListener('click', () => start(false));
+  ui.startFsBtn.addEventListener('click', () => start(true));
   document.addEventListener('fullscreenchange', syncFsClass);
   document.addEventListener('webkitfullscreenchange', syncFsClass);
 
@@ -251,13 +276,26 @@
     loadLevel(fromUrl >= 1 ? fromUrl - 1 : Number.isInteger(progress.current) ? progress.current : 0);
     const frame = now => { R.render(now); requestAnimationFrame(frame); };
     requestAnimationFrame(frame);
+
+    const returning = idx > 0 || Object.keys(progress.best).length > 0;
+    ui.startBtn.textContent = returning ? 'Resume' : 'Enter the bay';
+    ui.startBtn.disabled = false;
+    ui.startFsBtn.disabled = false;
+    ui.startBtn.focus({ preventScroll: true });
+
+    window.Magnus = { get level() { return level; }, get state() { return state; }, renderer: R, start };
   }
 
   if (window.THREE) boot();
   else {
     window.addEventListener('three-ready', boot, { once: true });
     setTimeout(() => {
-      if (!window.THREE) ui.loading.textContent = 'Could not load Three.js from the CDN. Check your connection and reload.';
+      if (window.THREE) return;
+      const msg = 'Could not load Three.js from the CDN. Check your connection and reload.';
+      ui.loading.textContent = msg;
+      ui.splashError.textContent = msg;
+      ui.splashError.classList.remove('hidden');
+      ui.startBtn.textContent = 'Unavailable';
     }, 8000);
   }
 })();
