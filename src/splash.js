@@ -38,9 +38,15 @@
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const cy = h * 0.56;
-      const d = Math.min(w * 0.3, 340);
-      poles = [{ x: w / 2 - d / 2, y: cy, q: 1 }, { x: w / 2 + d / 2, y: cy, q: -1 }];
+      // Poles flank the title so the lines arc around the text, not under it:
+      // side by side in landscape, above and below in portrait.
+      if (h > w * 1.1) {
+        poles = [{ x: w / 2, y: h * 0.14, q: 1 }, { x: w / 2, y: h * 0.86, q: -1 }];
+      } else {
+        const cy = h * 0.44;
+        const d = Math.min(w * 0.78, 980);
+        poles = [{ x: w / 2 - d / 2, y: cy, q: 1 }, { x: w / 2 + d / 2, y: cy, q: -1 }];
+      }
       reseed();
     }
 
@@ -96,7 +102,7 @@
     }
 
     function drawLine(line, dt) {
-      if (!reduced) line.head = Math.min(line.n, line.head + dt * 0.09 * line.speed * line.n);
+      if (!reduced) line.head = Math.min(line.n, line.head + dt * 0.42 * line.speed * line.n);
       const upto = Math.floor(line.head);
       if (upto < 2) return;
       const { pts } = line;
