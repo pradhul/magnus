@@ -2,87 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Magnus — Chapter 1: Loading Bay 0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Magnus — Chapter 1</title>
   <link rel="stylesheet" href="src/style.css">
 </head>
-<body>
-  <header>
-    <h1>MAGNUS <span class="sub">Chapter 1 · Loading Bay 0</span></h1>
+<body class="playing">
+  <div id="viewport" class="viewport">
+    <canvas id="game" aria-label="Game view"></canvas>
+    <div id="loading" class="loading">Loading Three.js…</div>
+
+    <div class="toast" aria-live="polite">
+      <span id="msg" class="msg"></span>
+      <button id="nextLevel" class="primary hidden">Next room ↵</button>
+    </div>
+
+    <div class="chrome-top">
+      <button id="infoBtn" type="button" title="Game info (I)">Info</button>
+      <button id="fsBtn" type="button" title="Fullscreen">Fullscreen</button>
+    </div>
+
+    <div id="overlay" class="overlay-controls">
+      <div class="dpad" aria-label="Move">
+        <button type="button" data-action="up" title="Up">▲</button>
+        <button type="button" data-action="left" title="Left">◀</button>
+        <button type="button" data-action="down" title="Down">▼</button>
+        <button type="button" data-action="right" title="Right">▶</button>
+      </div>
+      <div class="action-stack">
+        <button type="button" id="pulseMode" aria-pressed="false" title="Make the d-pad pulse instead of walk">Pulse</button>
+        <button type="button" data-action="toggle">Flip</button>
+        <button type="button" data-action="undo">Undo</button>
+        <button type="button" data-action="restart">Restart</button>
+      </div>
+    </div>
+  </div>
+
+  <aside id="infoPanel" class="info-panel hidden" aria-hidden="true">
+    <div class="info-head">
+      <h1>MAGNUS <span class="sub">Chapter 1</span></h1>
+      <button type="button" id="infoClose" title="Close (Esc)">Close</button>
+    </div>
     <nav class="level-nav">
-      <button id="prev" title="Previous room ([)">◀</button>
+      <button type="button" id="prev" title="Previous room ([)">◀</button>
       <select id="levelSelect" aria-label="Choose room"></select>
-      <button id="next" title="Next room (])">▶</button>
+      <button type="button" id="next" title="Next room (])">▶</button>
     </nav>
-  </header>
+    <div class="title">
+      <h2 id="levelName"></h2>
+      <p id="teaches" class="teaches"></p>
+      <p id="story"></p>
+    </div>
+    <div class="status">
+      <span id="poleBadge" class="badge north"></span>
+      <span id="moves"></span>
+      <span id="best" class="best"></span>
+    </div>
+    <p id="hintText" class="hint hidden"></p>
+    <button type="button" data-action="hint" id="hintBtn">Show hint</button>
 
-  <main>
-    <section class="stage">
-      <div class="title">
-        <h2 id="levelName"></h2>
-        <p id="teaches" class="teaches"></p>
-        <p id="story"></p>
-      </div>
+    <h3>Controls</h3>
+    <ul>
+      <li><kbd>←↑↓→</kbd> / <kbd>WASD</kbd> walk</li>
+      <li><kbd>Shift</kbd> + direction — <b>pulse</b> (or tap a tile in your row/column)</li>
+      <li><kbd>Space</kbd> flip your pole N ⇄ S</li>
+      <li><kbd>Z</kbd> undo · <kbd>R</kbd> restart · <kbd>I</kbd> info · <kbd>[</kbd> <kbd>]</kbd> rooms</li>
+      <li>On a phone or in fullscreen, use the on-screen pad. Pulse mode makes the pad pulse instead of walk.</li>
+    </ul>
 
-      <div class="viewport">
-        <canvas id="game" aria-label="Game view"></canvas>
-        <div id="loading" class="loading">Loading Three.js…</div>
-      </div>
+    <h3>How magnets work here</h3>
+    <ul>
+      <li>Your pulse travels in a straight line and grabs the <b>first body</b> it meets. Rocks stop it; <b>crystal</b> does not.</li>
+      <li><b>Unlike poles pull, like poles push.</b> Plain iron has no pole: it is always pulled, never pushed.</li>
+      <li><b>Force is mutual.</b> Light bodies slide to you or away from you until something stops them. Heavy bodies (iron-banded boulders, lodestones) move <i>you</i> instead — you fly until something stops you.</li>
+      <li>Push a block that <b>cannot move</b> and the push comes back: you recoil.</li>
+      <li>A block that slides into <b>water</b> sinks and fills it. If <i>you</i> stop over water, you fall.</li>
+      <li><b>Stone plates</b> hold wooden gates open only while something rests on every plate.</li>
+    </ul>
 
-      <div class="status">
-        <span id="poleBadge" class="badge north"></span>
-        <span id="moves"></span>
-        <span id="best" class="best"></span>
-        <span id="msg" class="msg"></span>
-        <button id="nextLevel" class="primary hidden">Next room ↵</button>
-      </div>
-
-      <div class="controls">
-        <div class="dpad" aria-label="Move">
-          <button data-action="up" title="Up">▲</button>
-          <button data-action="left" title="Left">◀</button>
-          <button data-action="down" title="Down">▼</button>
-          <button data-action="right" title="Right">▶</button>
-        </div>
-        <div class="buttons">
-          <button id="pulseMode" class="wide" aria-pressed="false" title="Make the arrow buttons pulse instead of walk">⚡ Pulse mode</button>
-          <button data-action="toggle">Flip pole <kbd>Space</kbd></button>
-          <button data-action="undo">Undo <kbd>Z</kbd></button>
-          <button data-action="restart">Restart <kbd>R</kbd></button>
-          <button data-action="hint">Hint <kbd>H</kbd></button>
-        </div>
-      </div>
-      <p id="hintText" class="hint hidden"></p>
-    </section>
-
-    <aside class="rules">
-      <h3>Controls</h3>
-      <ul>
-        <li><kbd>←↑↓→</kbd> / <kbd>WASD</kbd> walk</li>
-        <li><kbd>Shift</kbd> + direction — <b>pulse</b> your field that way (or click a tile in your row/column)</li>
-        <li><kbd>Space</kbd> flip your pole N ⇄ S</li>
-        <li><kbd>Z</kbd> undo · <kbd>R</kbd> restart · <kbd>H</kbd> hint · <kbd>[</kbd> <kbd>]</kbd> rooms</li>
-      </ul>
-
-      <h3>How magnets work here</h3>
-      <ul>
-        <li>Your pulse travels in a straight line and grabs the <b>first body</b> it meets. Walls stop it; <b>glass</b> does not.</li>
-        <li><b>Unlike poles pull, like poles push.</b> Plain iron has no pole: it is always pulled, never pushed.</li>
-        <li><b>Force is mutual.</b> Light bodies slide to you or away from you until something stops them. Heavy bodies (riveted anchors, glowing pillars) move <i>you</i> instead — you fly until something stops you.</li>
-        <li>Push a block that <b>cannot move</b> and the push comes back: you recoil.</li>
-        <li>A block that slides into a <b>pit</b> sinks and fills it. If <i>you</i> stop over a pit, you fall.</li>
-        <li><b>Plates</b> hold blast doors open only while something rests on every plate.</li>
-      </ul>
-
-      <h3>Legend</h3>
-      <ul class="legend">
-        <li><i class="sw floor"></i> floor · <i class="sw wall"></i> concrete · <i class="sw pit"></i> acid trench</li>
-        <li><i class="sw glass"></i> glass · <i class="sw anchor"></i> steel anchor (heavy iron)</li>
-        <li><i class="sw north"></i> N · <i class="sw south"></i> S — blocks (light) and pillars (heavy)</li>
-        <li><i class="sw iron"></i> iron crate · <i class="sw plate"></i> plate · <i class="sw door"></i> door · <i class="sw exit"></i> exit</li>
-      </ul>
-    </aside>
-  </main>
+    <h3>Legend</h3>
+    <ul class="legend">
+      <li><i class="sw floor"></i> grass · <i class="sw wall"></i> rock / hedge · <i class="sw pit"></i> water</li>
+      <li><i class="sw glass"></i> crystal · <i class="sw anchor"></i> iron-banded boulder (heavy)</li>
+      <li><i class="sw north"></i> N · <i class="sw south"></i> S — blocks (light) and lodestones (heavy)</li>
+      <li><i class="sw iron"></i> crate · <i class="sw plate"></i> plate · <i class="sw door"></i> gate · <i class="sw exit"></i> lantern</li>
+    </ul>
+    <p class="version" id="versionLabel">v0.2.0</p>
+  </aside>
 
   <script src="src/engine.js"></script>
   <script src="src/levels.js"></script>

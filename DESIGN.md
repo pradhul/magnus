@@ -8,19 +8,21 @@ This document covers the Chapter 1 storyline, how Magnus moves, the obstacle
 catalogue, the ten rooms of Chapter 1 and why they are in that order, and ideas
 for later chapters. `README.md` covers how to run and play.
 
+The rules are unchanged from v0.1. v0.2.0 is a presentation pass: overhead
+camera, a walking figure, outdoor meadow dressing, hidden chrome, and on-screen
+controls. ASCII maps and `engine.js` are the same.
+
 ---
 
 ## 1. Premise
 
-**Polar Foundry** builds superconducting crane magnets for ship-breaking yards.
-Magnus is a rigger on the night shift. During a crane test in **Loading Bay 0**,
-the electromagnet array surges and dumps its field into the nearest grounded
-body — his. When he comes round, every ferrous thing in the bay is leaning
-toward his hands, and the bay has gone into lockdown: blast doors down,
-catwalks retracted, acid trench uncovered.
+**Polar Foundry** built superconducting crane magnets for ship-breaking yards.
+After a night-shift surge, Magnus woke with the field in his body. Salvage from
+the bay was dumped in a woodland clearing while the site locked down: ponds
+uncovered, crystal screens still standing, lodestones humming in the grass.
 
-**Chapter 1 goal:** reach the control booth at the far end of the bay and lift
-the lockdown before the foundry's failsafe floods the bay with coolant.
+**Chapter 1 goal:** cross the meadow and reach the stone hut's lantern before
+the path floods.
 
 The chapter is ten rooms. Each room is one self-contained puzzle with a single
 exit. The story is told in one line per room (the `story` field in
@@ -29,9 +31,9 @@ get in the way of the puzzle.
 
 ### Tone
 
-Industrial, quiet, a little dry. Magnus does not speak; the rooms do. Every
-obstacle is a piece of foundry equipment behaving exactly as physics says it
-should, now that a man-sized magnet is walking through it.
+Quiet outdoor salvage, a little dry. Magnus does not speak; the rooms do.
+Every obstacle is a piece of foundry scrap or lodestone behaving exactly as
+physics says it should, now that a man-sized magnet is walking through it.
 
 ---
 
@@ -48,7 +50,7 @@ solvable using only these; there are no hidden exceptions.
 | Newton's third law: force is mutual | **Light** bodies move; **heavy** bodies move *Magnus* instead. |
 | Momentum: a body keeps going until something stops it | Anything set in motion slides until it hits something solid (or falls into a pit). |
 | Push against something immovable and you move | **Recoil**: repel a light block that is braced and cannot move, and Magnus flies backward. |
-| Fields pass through non-ferrous materials | **Glass** lets the field through but blocks bodies. **Concrete** blocks both. |
+| Fields pass through non-ferrous materials | **Crystal** lets the field through but blocks bodies. **Rock** blocks both. |
 | Iron shields | Only the first body in line feels the field. Whatever is behind it gets nothing. |
 
 Two convenience rules keep it a puzzle rather than a physics sandbox:
@@ -84,21 +86,21 @@ later rooms.
 
 | Tile | Name | Bodies | Field | Notes |
 | --- | --- | --- | --- | --- |
-| `#` | Concrete wall | blocked | blocked | Also wood, rubber: dead material. |
-| `.` | Floor | — | passes | |
-| `~` | Acid trench (pit) | blocks walking; flight passes over | passes | A block that slides in sinks and becomes floor. Magnus who *stops* over one falls. |
-| `=` | Glass | blocked | **passes** | The signature trick: act on things you cannot reach. |
-| `_` | Pressure plate | — | passes | Held down by Magnus or any block. |
-| `D` | Blast door | blocked while closed | blocked while closed | Open only while **every** plate in the room is held. Closes the instant a plate is released. |
-| `X` | Exit | — | passes | Step on it to clear the room. |
+| `#` | Rock / hedge / log | blocked | blocked | Dead material. Same rule as the old concrete wall. |
+| `.` | Grass | — | passes | |
+| `~` | Water (pit) | blocks walking; flight passes over | passes | A block that slides in sinks and becomes floor. Magnus who *stops* over one falls. |
+| `=` | Crystal | blocked | **passes** | The signature trick: act on things you cannot reach. |
+| `_` | Stone plate | — | passes | Held down by Magnus or any block. |
+| `D` | Wooden gate | blocked while closed | blocked while closed | Open only while **every** plate in the room is held. Closes the instant a plate is released. |
+| `X` | Lantern / exit | — | passes | Step on it to clear the room. |
 
 ### Heavy bodies (fixed — they move Magnus)
 
 | Tile | Name | Attract | Repel |
 | --- | --- | --- | --- |
-| `A` | Steel anchor (riveted iron) | Zip toward it, either pole | never |
-| `N` | North pillar | Zip when Magnus is S | Launch when Magnus is N |
-| `S` | South pillar | Zip when Magnus is N | Launch when Magnus is S |
+| `A` | Iron-banded boulder | Zip toward it, either pole | never |
+| `N` | North lodestone | Zip when Magnus is S | Launch when Magnus is N |
+| `S` | South lodestone | Zip when Magnus is N | Launch when Magnus is S |
 
 ### Light bodies (movable — Magnus moves them)
 
