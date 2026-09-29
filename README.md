@@ -11,7 +11,7 @@ Chapter 1, *The Clearing*, is ten rooms of increasing difficulty. See
 [`DESIGN.md`](DESIGN.md) for the storyline, the rules, the obstacle catalogue,
 and a walkthrough of each room.
 
-Version **0.2.0**.
+Version **0.2.1**.
 
 ## Play
 
