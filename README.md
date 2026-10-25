@@ -11,7 +11,7 @@ Chapter 1, *The Clearing*, is ten rooms of increasing difficulty. See
 [`DESIGN.md`](DESIGN.md) for the storyline, the rules, the obstacle catalogue,
 and a walkthrough of each room.
 
-Version **0.2.0**.
+Version **0.3.0**.
 
 ## Play
 
@@ -25,9 +25,13 @@ python3 -m http.server 8765   # then open http://localhost:8765/
 
 `?level=7` in the URL jumps straight to a room.
 
-The board fills the window. **Info** (or `I`) opens rules, story, and level
-select. **Fullscreen** puts the pad on screen so the game is playable on a
-phone or in a kiosk.
+The page opens on a title screen: field lines trace between two poles and
+flip every few seconds. **Enter the bay** (or `Enter`) starts the game;
+**Play fullscreen** (or `F`) starts it in fullscreen.
+
+The board fills the window with no text on it. **Info** (or `I`) opens rules,
+story, and level select; **Fullscreen** (or `F`) hides the browser chrome and
+puts the pad on screen so the game is playable on a phone or in a kiosk.
 
 ## Deploy to Render
 
@@ -49,6 +53,7 @@ to `main` redeploys; pull requests get their own preview URL.
 | Space | Flip your pole N ⇄ S |
 | Z | Undo |
 | R | Restart room |
+| F | Toggle fullscreen |
 | I | Open / close info |
 | H | Open info and toggle hint |
 | `[` `]` | Previous / next room |
@@ -59,7 +64,8 @@ the right. Toggle **Pulse** to make the pad pulse instead of walk.
 ## Project layout
 
 ```
-index.html        page shell, overlay controls, info panel
+index.html        page shell, splash screen, overlay controls, info panel
+src/splash.js     title-screen animation: traced field lines between two poles
 src/engine.js     the rules — pure logic, runs in the browser and in Node
 src/levels.js     the ten rooms as ASCII maps
 src/render3d.js   Three.js view: geometry, lighting, animation of engine events
